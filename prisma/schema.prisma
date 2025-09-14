@@ -13,3 +13,55 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id          Int           @id @default(autoincrement())
+  email       String        @unique
+  password    String
+  nickname    String        @unique
+  phoneNumber String        @unique
+  ppi         Int           @default(1000)
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @default(now())
+  games       Participant[]
+  tickets     Ticket[]
+}
+
+model Game {
+  id                         Int           @id @default(autoincrement())
+  time                       String
+  place                      String
+  particifationFee           Int
+  rebuyinFee                 Int
+  startingChip               Int
+  startingBB                 Int
+  estimatedDurationInMinutes Int
+  maxParticipant             Int
+  minParticipant             Int
+  participants               Participant[]
+}
+
+model Participant {
+  game      Game              @relation(fields: [gameId], references: [id])
+  gameId    Int
+  User      User              @relation(fields: [userId], references: [id])
+  userId    Int
+  status    ParticipantStatus @default(SUSPENDED)
+  rank      Int?
+  ppiChange Int?
+
+  @@id([gameId, userId])
+}
+
+model Ticket {
+  id       Int      @id @default(autoincrement())
+  User     User?    @relation(fields: [userId], references: [id])
+  userId   Int?
+  isUsed   Boolean  @default(false)
+  issuedAt DateTime @default(now())
+}
+
+enum ParticipantStatus {
+  CONFIRMED
+  SUSPENDED
+}
