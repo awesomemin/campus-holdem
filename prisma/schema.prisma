@@ -15,16 +15,17 @@ datasource db {
 }
 
 model User {
-  id          Int           @id @default(autoincrement())
-  email       String        @unique
-  password    String
-  nickname    String        @unique
-  phoneNumber String        @unique
-  ppi         Int           @default(1000)
-  created_at  DateTime      @default(now())
-  updated_at  DateTime      @default(now())
-  games       Participant[]
-  tickets     Ticket[]
+  id                Int           @id @default(autoincrement())
+  email             String        @unique
+  password          String
+  nickname          String        @unique
+  phoneNumber       String        @unique
+  profilePictureUrl String?
+  ppi               Int           @default(1000)
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @default(now())
+  games             Participant[]
+  tickets           Ticket[]
 }
 
 model Game {
