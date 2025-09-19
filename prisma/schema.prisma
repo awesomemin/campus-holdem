@@ -15,17 +15,18 @@ datasource db {
 }
 
 model User {
-  id                Int           @id @default(autoincrement())
-  email             String        @unique
-  password          String
-  nickname          String        @unique
-  phoneNumber       String        @unique
-  profilePictureUrl String?
-  ppi               Int           @default(1000)
-  created_at        DateTime      @default(now())
-  updated_at        DateTime      @default(now())
-  games             Participant[]
-  tickets           Ticket[]
+  id                 Int                 @id @default(autoincrement())
+  email              String              @unique
+  password           String
+  nickname           String              @unique
+  phoneNumber        String              @unique
+  profilePictureUrl  String?
+  ppi                Int                 @default(1000)
+  ticketBalance      Int                 @default(0)
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @default(now())
+  games              Participant[]
+  ticketTransactions TicketTransaction[]
 }
 
 model Game {
@@ -54,15 +55,33 @@ model Participant {
   @@id([gameId, userId])
 }
 
-model Ticket {
-  id       Int      @id @default(autoincrement())
-  User     User?    @relation(fields: [userId], references: [id])
-  userId   Int?
-  isUsed   Boolean  @default(false)
-  issuedAt DateTime @default(now())
+model TicketTransaction {
+  id          Int                   @id @default(autoincrement())
+  user        User                  @relation(fields: [userId], references: [id])
+  userId      Int
+  type        TicketTransactionType
+  source      TicketSource
+  amount      Int
+  description String?
+  gameId      Int?
+  createdAt   DateTime              @default(now())
 }
 
 enum ParticipantStatus {
   CONFIRMED
   SUSPENDED
+}
+
+enum TicketTransactionType {
+  EARNED
+  SPENT
+}
+
+enum TicketSource {
+  GAME_WIN
+  EVENT_REWARD
+  NEWCOMER_GIFT
+  ADMIN_GRANT
+  GAME_REGISTRATION
+  MANUAL_ADJUSTMENT
 }
