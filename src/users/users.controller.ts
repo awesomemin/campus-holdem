@@ -35,6 +35,7 @@ export class UsersController {
       return {
         id: user.id,
         email: user.email,
+        name: user.name,
         nickname: user.nickname,
         phoneNumber: user.phoneNumber,
         profilePictureUrl: user.profilePictureUrl,

@@ -9,6 +9,7 @@ export class UsersService {
   async createUser(userData: {
     email: string;
     password: string;
+    name: string;
     nickname: string;
     phoneNumber: string;
   }) {
@@ -17,6 +18,7 @@ export class UsersService {
         data: {
           email: userData.email,
           password: userData.password,
+          name: userData.name,
           nickname: userData.nickname,
           phoneNumber: userData.phoneNumber,
         },
