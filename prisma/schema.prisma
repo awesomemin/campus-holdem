@@ -41,6 +41,7 @@ model Game {
   estimatedDurationInMinutes Int
   maxParticipant             Int
   minParticipant             Int
+  status                     GameStatus    @default(PLANNED)
   participants               Participant[]
 }
 
@@ -71,6 +72,13 @@ model TicketTransaction {
 enum ParticipantStatus {
   CONFIRMED
   SUSPENDED
+}
+
+enum GameStatus {
+  PLANNED
+  PROGRESS
+  COMPLETED
+  CANCELED
 }
 
 enum TicketTransactionType {
