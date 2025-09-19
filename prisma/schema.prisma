@@ -32,7 +32,7 @@ model User {
 
 model Game {
   id                         Int           @id @default(autoincrement())
-  time                       String
+  time                       DateTime
   place                      String
   particifationFee           Int
   rebuyinFee                 Int
