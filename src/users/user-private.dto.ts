@@ -7,4 +7,5 @@ export class UserPrivateDto {
   profilePictureUrl: string | null;
   ppi: number;
   created_at: Date;
+  ticketBalance: number;
 }

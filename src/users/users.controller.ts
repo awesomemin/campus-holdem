@@ -40,6 +40,7 @@ export class UsersController {
         phoneNumber: user.phoneNumber,
         profilePictureUrl: user.profilePictureUrl,
         ppi: user.ppi,
+        ticketBalance: user.ticketBalance,
         created_at: user.created_at,
       };
     }
@@ -49,6 +50,7 @@ export class UsersController {
       nickname: user.nickname,
       profilePictureUrl: user.profilePictureUrl,
       ppi: user.ppi,
+      ticketBalance: user.ticketBalance,
       created_at: user.created_at,
     };
   }
