@@ -53,6 +53,7 @@ model Participant {
   rank         Int?
   ppiChange    Int?
   ticketChange Int?
+  usedTicket   Boolean           @default(false)
 
   @@id([gameId, userId])
 }

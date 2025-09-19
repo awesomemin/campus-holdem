@@ -50,7 +50,7 @@ export class GamesService {
     });
   }
 
-  async applyToGame(gameId: number, userId: number) {
+  async applyToGame(gameId: number, userId: number, useTicket: boolean) {
     const game = await this.prisma.game.findUnique({
       where: { id: gameId },
       include: {
@@ -83,11 +83,46 @@ export class GamesService {
       throw new BadRequestException('User is already registered for this game');
     }
 
+    if (useTicket) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      if (user.ticketBalance < 1) {
+        throw new BadRequestException('Insufficient tickets');
+      }
+
+      return this.prisma.$transaction(async (prisma) => {
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            ticketBalance: {
+              decrement: 1,
+            },
+          },
+        });
+
+        return prisma.participant.create({
+          data: {
+            gameId,
+            userId,
+            status: 'CONFIRMED',
+            usedTicket: true,
+          },
+        });
+      });
+    }
+
     return this.prisma.participant.create({
       data: {
         gameId,
         userId,
         status: 'SUSPENDED',
+        usedTicket: false,
       },
     });
   }
