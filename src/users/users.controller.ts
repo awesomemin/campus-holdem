@@ -54,4 +54,9 @@ export class UsersController {
       created_at: user.created_at,
     };
   }
+
+  @Get(':id/applylist')
+  async getUserApplyList(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getUserApplyList(id);
+  }
 }

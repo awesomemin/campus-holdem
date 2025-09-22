@@ -69,4 +69,34 @@ export class UsersService {
       where: { nickname },
     });
   }
+
+  async getUserApplyList(userId: number) {
+    return this.prisma.game.findMany({
+      where: {
+        status: 'PLANNED',
+        participants: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        time: true,
+        place: true,
+        status: true,
+        participants: {
+          where: {
+            userId: userId,
+          },
+          select: {
+            status: true,
+          },
+        },
+      },
+      orderBy: {
+        time: 'asc',
+      },
+    });
+  }
 }
