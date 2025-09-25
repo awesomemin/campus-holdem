@@ -67,6 +67,11 @@ export class GamesService {
               },
             },
           },
+          orderBy: {
+            rank: 'asc',
+            createdAt: 'asc',
+            userId: 'asc',
+          },
         },
       },
     });

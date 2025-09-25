@@ -54,6 +54,7 @@ model Participant {
   ppiChange    Int?
   ticketChange Int?
   usedTicket   Boolean           @default(false)
+  createdAt    DateTime          @default(now())
 
   @@id([gameId, userId])
 }
