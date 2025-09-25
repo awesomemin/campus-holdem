@@ -67,11 +67,17 @@ export class GamesService {
               },
             },
           },
-          orderBy: {
-            rank: 'asc',
-            createdAt: 'asc',
-            userId: 'asc',
-          },
+          orderBy: [
+            {
+              rank: 'asc',
+            },
+            {
+              createdAt: 'asc',
+            },
+            {
+              userId: 'asc',
+            },
+          ],
         },
       },
     });
