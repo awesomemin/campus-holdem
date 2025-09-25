@@ -10,11 +10,24 @@ export class GamesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getAllGames() {
-    return this.prisma.game.findMany({
+    const games = await this.prisma.game.findMany({
       include: {
         _count: {
           select: {
             participants: true,
+          },
+        },
+        participants: {
+          where: {
+            rank: 1,
+          },
+          select: {
+            User: {
+              select: {
+                nickname: true,
+                profilePictureUrl: true,
+              },
+            },
           },
         },
       },
@@ -22,6 +35,15 @@ export class GamesService {
         id: 'desc',
       },
     });
+
+    return games.map((game) => ({
+      ...game,
+      winner:
+        game.status === 'COMPLETED' && game.participants.length > 0
+          ? game.participants[0].User
+          : null,
+      participants: undefined,
+    }));
   }
 
   async getGameById(id: number) {
@@ -68,6 +90,10 @@ export class GamesService {
 
     if (game._count.participants >= game.maxParticipant) {
       throw new BadRequestException('Game is already full');
+    }
+
+    if (game.status !== 'PLANNED') {
+      throw new BadRequestException('Game is not available.');
     }
 
     const existingParticipant = await this.prisma.participant.findUnique({
