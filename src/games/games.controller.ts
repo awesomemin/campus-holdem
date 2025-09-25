@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { GamesService } from './games.service';
 import { ApplyGameDto } from './apply-game.dto';
+import { FinishGameDto } from './finish-game.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { AuthRequest } from '../auth/auth-request.interface';
 
@@ -46,5 +47,14 @@ export class GamesController {
       req.user!.id,
       applyGameDto.useTicket,
     );
+  }
+
+  @Post(':id/finish')
+  @UseGuards(JwtAuthGuard)
+  async finishGame(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() finishGameDto: FinishGameDto,
+  ) {
+    return this.gamesService.finishGame(id, finishGameDto.rankings);
   }
 }
