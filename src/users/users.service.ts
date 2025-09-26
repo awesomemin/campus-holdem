@@ -99,4 +99,60 @@ export class UsersService {
       },
     });
   }
+
+  async updateUser(
+    userId: number,
+    updateData: {
+      email?: string;
+      phoneNumber?: string;
+      nickname?: string;
+    },
+  ) {
+    try {
+      return await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          ...updateData,
+          updated_at: new Date(),
+        },
+      });
+    } catch (error) {
+      const prismaError = error as Prisma.PrismaClientKnownRequestError;
+      if (prismaError.code === 'P2002') {
+        const target = prismaError.meta?.target;
+        if (!Array.isArray(target)) {
+          throw new ConflictException(
+            'User with this information already exists',
+          );
+        }
+        if (target.includes('email')) {
+          throw new ConflictException('Email already exists');
+        }
+        if (target.includes('nickname')) {
+          throw new ConflictException('Nickname already exists');
+        }
+        if (target.includes('phoneNumber')) {
+          throw new ConflictException('Phone number already exists');
+        }
+      }
+      throw error;
+    }
+  }
+
+  async updateProfileImage(userId: number, profilePictureUrl: string) {
+    const currentUser = await this.findUserById(userId);
+
+    // Delete old image from S3 if it exists
+    if (currentUser?.profilePictureUrl) {
+      // We'll handle this in a separate method or leave it for now
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        profilePictureUrl,
+        updated_at: new Date(),
+      },
+    });
+  }
 }

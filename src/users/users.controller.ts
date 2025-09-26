@@ -6,16 +6,26 @@ import {
   ParseIntPipe,
   UseGuards,
   Request,
+  Patch,
+  Body,
 } from '@nestjs/common';
 import { OptionalJwtAuthGuard } from '../auth/optional-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { AuthRequest } from '../auth/auth-request.interface';
 import { UsersService } from './users.service';
 import { UserPublicDto } from './user-public.dto';
 import { UserPrivateDto } from './user-private.dto';
+import { UpdateUserDto } from './update-user.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get('applylist')
+  @UseGuards(JwtAuthGuard)
+  async getUserApplyList(@Request() req: AuthRequest) {
+    return this.usersService.getUserApplyList(req.user!.id);
+  }
 
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
@@ -55,8 +65,22 @@ export class UsersController {
     };
   }
 
-  @Get(':id/applylist')
-  async getUserApplyList(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.getUserApplyList(id);
+  @Patch()
+  @UseGuards(JwtAuthGuard)
+  async updateUserProfile(
+    @Body() updateUserDto: UpdateUserDto,
+    @Request() req: AuthRequest,
+  ) {
+    const updatedUser = await this.usersService.updateUser(
+      req.user!.id,
+      updateUserDto,
+    );
+
+    return {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      nickname: updatedUser.nickname,
+      phoneNumber: updatedUser.phoneNumber,
+    };
   }
 }
