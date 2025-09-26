@@ -1,10 +1,14 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { Prisma } from 'generated/prisma';
 import { PrismaService } from 'src/prisma.service';
+import { S3Service } from 'src/s3/s3.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private s3Service: S3Service,
+  ) {}
 
   async createUser(userData: {
     email: string;
@@ -106,15 +110,51 @@ export class UsersService {
       email?: string;
       phoneNumber?: string;
       nickname?: string;
+      profilePicture?: Express.Multer.File;
     },
   ) {
     try {
+      let profilePictureUrl: string | undefined;
+
+      if (updateData.profilePicture) {
+        const currentUser = await this.findUserById(userId);
+
+        if (currentUser?.profilePictureUrl) {
+          await this.s3Service.deleteFile(currentUser.profilePictureUrl);
+        }
+
+        profilePictureUrl = await this.s3Service.uploadFile(
+          updateData.profilePicture,
+          'profile-images',
+        );
+      }
+
+      const dataToUpdate: {
+        email?: string;
+        phoneNumber?: string;
+        nickname?: string;
+        profilePictureUrl?: string;
+        updated_at: Date;
+      } = {
+        email: updateData.email,
+        phoneNumber: updateData.phoneNumber,
+        nickname: updateData.nickname,
+        updated_at: new Date(),
+      };
+
+      if (profilePictureUrl) {
+        dataToUpdate.profilePictureUrl = profilePictureUrl;
+      }
+
+      const filteredData = Object.fromEntries(
+        Object.entries(dataToUpdate).filter(
+          ([_, value]) => value !== undefined,
+        ),
+      );
+
       return await this.prisma.user.update({
         where: { id: userId },
-        data: {
-          ...updateData,
-          updated_at: new Date(),
-        },
+        data: filteredData,
       });
     } catch (error) {
       const prismaError = error as Prisma.PrismaClientKnownRequestError;

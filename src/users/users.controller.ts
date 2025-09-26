@@ -8,7 +8,10 @@ import {
   Request,
   Patch,
   Body,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { OptionalJwtAuthGuard } from '../auth/optional-auth.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { AuthRequest } from '../auth/auth-request.interface';
@@ -67,13 +70,43 @@ export class UsersController {
 
   @Patch()
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('profilePicture', {
+      limits: {
+        fileSize: 20 * 1024 * 1024, // 20MB limit (will be resized if > 5MB)
+      },
+      fileFilter: (_req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+          cb(new Error('Only image files are allowed'), false);
+        } else {
+          cb(null, true);
+        }
+      },
+    }),
+  )
   async updateUserProfile(
     @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile() profilePicture: Express.Multer.File | undefined,
     @Request() req: AuthRequest,
   ) {
+    const updateData: {
+      email?: string;
+      phoneNumber?: string;
+      nickname?: string;
+      profilePicture?: Express.Multer.File;
+    } = {
+      email: updateUserDto.email,
+      phoneNumber: updateUserDto.phoneNumber,
+      nickname: updateUserDto.nickname,
+    };
+
+    if (profilePicture) {
+      updateData.profilePicture = profilePicture;
+    }
+
     const updatedUser = await this.usersService.updateUser(
       req.user!.id,
-      updateUserDto,
+      updateData,
     );
 
     return {
@@ -81,6 +114,7 @@ export class UsersController {
       email: updatedUser.email,
       nickname: updatedUser.nickname,
       phoneNumber: updatedUser.phoneNumber,
+      profilePictureUrl: updatedUser.profilePictureUrl,
     };
   }
 }
