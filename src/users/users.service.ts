@@ -179,6 +179,28 @@ export class UsersService {
     }
   }
 
+  async deleteProfilePicture(userId: number) {
+    const currentUser = await this.findUserById(userId);
+
+    if (!currentUser) {
+      throw new ConflictException('User not found');
+    }
+
+    // Delete image from S3 if it exists
+    if (currentUser.profilePictureUrl) {
+      await this.s3Service.deleteFile(currentUser.profilePictureUrl);
+    }
+
+    // Update user record to remove profile picture URL
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        profilePictureUrl: null,
+        updated_at: new Date(),
+      },
+    });
+  }
+
   async updateProfileImage(userId: number, profilePictureUrl: string) {
     const currentUser = await this.findUserById(userId);
 

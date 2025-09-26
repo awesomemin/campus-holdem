@@ -7,6 +7,7 @@ import {
   UseGuards,
   Request,
   Patch,
+  Delete,
   Body,
   UseInterceptors,
   UploadedFile,
@@ -115,6 +116,23 @@ export class UsersController {
       nickname: updatedUser.nickname,
       phoneNumber: updatedUser.phoneNumber,
       profilePictureUrl: updatedUser.profilePictureUrl,
+    };
+  }
+
+  @Delete('profile-picture')
+  @UseGuards(JwtAuthGuard)
+  async deleteProfilePicture(@Request() req: AuthRequest) {
+    const updatedUser = await this.usersService.deleteProfilePicture(
+      req.user!.id,
+    );
+
+    return {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      nickname: updatedUser.nickname,
+      phoneNumber: updatedUser.phoneNumber,
+      profilePictureUrl: updatedUser.profilePictureUrl,
+      message: 'Profile picture deleted successfully',
     };
   }
 }
