@@ -217,4 +217,93 @@ export class UsersService {
       },
     });
   }
+
+  async getRankings(page: number, limit: number, userId?: number) {
+    const skip = (page - 1) * limit;
+
+    // Get total count
+    const total = await this.prisma.user.count();
+
+    // Get paginated rankings with rank calculation
+    const usersWithRank = await this.prisma.$queryRaw<
+      Array<{
+        id: number;
+        nickname: string;
+        profilePictureUrl: string | null;
+        ppi: number;
+        rank: bigint;
+      }>
+    >`
+      SELECT
+        "id",
+        "nickname",
+        "profilePictureUrl",
+        "ppi",
+        RANK() OVER (ORDER BY "ppi" DESC) as rank
+      FROM "User"
+      ORDER BY "ppi" DESC, "id" ASC
+      LIMIT ${limit} OFFSET ${skip}
+    `;
+
+    // Convert bigint to number for rank
+    const rankings = usersWithRank.map((user) => ({
+      userId: user.id,
+      nickname: user.nickname,
+      profilePictureUrl: user.profilePictureUrl,
+      ppi: user.ppi,
+      rank: Number(user.rank),
+    }));
+
+    // If user is logged in, get their ranking
+    let myRanking:
+      | {
+          userId: number;
+          nickname: string;
+          profilePictureUrl: string | null;
+          ppi: number;
+          rank: number;
+        }
+      | undefined;
+    if (userId) {
+      const userRankData = await this.prisma.$queryRaw<
+        Array<{
+          id: number;
+          nickname: string;
+          profilePictureUrl: string | null;
+          ppi: number;
+          rank: bigint;
+        }>
+      >`
+        SELECT * FROM (
+          SELECT
+            "id",
+            "nickname",
+            "profilePictureUrl",
+            "ppi",
+            RANK() OVER (ORDER BY "ppi" DESC) as rank
+          FROM "User"
+        ) ranked_users
+        WHERE "id" = ${userId}
+      `;
+
+      if (userRankData.length > 0) {
+        const user = userRankData[0];
+        myRanking = {
+          userId: user.id,
+          nickname: user.nickname,
+          profilePictureUrl: user.profilePictureUrl,
+          ppi: user.ppi,
+          rank: Number(user.rank),
+        };
+      }
+    }
+
+    return {
+      rankings,
+      total,
+      page,
+      limit,
+      myRanking,
+    };
+  }
 }

@@ -11,6 +11,8 @@ import {
   Body,
   UseInterceptors,
   UploadedFile,
+  Query,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { OptionalJwtAuthGuard } from '../auth/optional-auth.guard';
@@ -20,10 +22,21 @@ import { UsersService } from './users.service';
 import { UserPublicDto } from './user-public.dto';
 import { UserPrivateDto } from './user-private.dto';
 import { UpdateUserDto } from './update-user.dto';
+import { UserRankingsResponseDto } from './user-ranking.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get('rankings')
+  @UseGuards(OptionalJwtAuthGuard)
+  async getRankings(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Request() req: AuthRequest,
+  ): Promise<UserRankingsResponseDto> {
+    return this.usersService.getRankings(page, limit, req.user?.id);
+  }
 
   @Get('applylist')
   @UseGuards(JwtAuthGuard)
