@@ -55,6 +55,7 @@ model Participant {
   ticketChange Int?
   usedTicket   Boolean           @default(false)
   createdAt    DateTime          @default(now())
+  rebuyin      Boolean?
 
   @@id([gameId, userId])
 }
