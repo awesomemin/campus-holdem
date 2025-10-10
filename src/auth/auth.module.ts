@@ -21,7 +21,6 @@ import { JwtAuthGuard } from './jwt-auth.guard';
         }
         return {
           secret,
-          signOptions: { expiresIn: '1d' },
         };
       },
       inject: [ConfigService],
